@@ -1,6 +1,5 @@
 # API de Gestión de Inventario - Tienda de Coleccionables y Juegos de Rol
 
-Proyecto de aula para la asignatura **Ingeniería de Software 2** - Politécnico Grancolombiano.
 
 ---
 
