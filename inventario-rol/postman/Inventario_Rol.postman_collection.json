@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Inventario Rol y Coleccionables API",
-    "description": "Coleccion de pruebas REST para la entidad Producto con arquitectura en capas",
+    "description": "Coleccion de pruebas REST para la entidad Producto con arquitectura en capas y patron GoF Strategy",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -36,7 +36,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"codigoSku\": \"ROL-DD5-001\",\n  \"nombre\": \"Manual del Jugador D&D 5ta Edicion\",\n  \"descripcion\": \"Libro basico de reglas oficiales en tapa dura para jugadores\",\n  \"categoria\": \"MANUAL_ROL\",\n  \"precio\": 189900.00,\n  \"stock\": 15\n}"
+          "raw": "{\n  \"codigoSku\": \"ROL-DD5-001\",\n  \"nombre\": \"Manual del Jugador D&D 5ta Edicion\",\n  \"descripcion\": \"Libro basico de reglas oficiales en tapa dura para jugadores\",\n  \"categoria\": \"MANUAL_ROL\",\n  \"precio\": 180000.00,\n  \"stock\": 15\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/productos",
@@ -103,7 +103,19 @@
       }
     },
     {
-      "name": "7. Actualizar Producto",
+      "name": "7. Cotizar Descuento (Patron GoF Strategy)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/productos/1/descuento",
+          "host": ["{{baseUrl}}"],
+          "path": ["productos", "1", "descuento"]
+        }
+      }
+    },
+    {
+      "name": "8. Actualizar Producto",
       "request": {
         "method": "PUT",
         "header": [
@@ -114,17 +126,17 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"codigoSku\": \"ROL-DD5-001\",\n  \"nombre\": \"Manual del Jugador D&D 5ta Edicion (Revisado)\",\n  \"descripcion\": \"Libro basico de reglas oficiales en tapa dura - Edicion especial\",\n  \"categoria\": \"MANUAL_ROL\",\n  \"precio\": 199900.00,\n  \"stock\": 12\n}"
+          "raw": "{\n  \"codigoSku\": \"ROL-DD5-001\",\n  \"nombre\": \"Manual del Jugador D&D 5ta Edicion (Revisado)\",\n  \"descripcion\": \"Libro basico de reglas oficiales en tapa dura - Edicion especial\",\n  \"categoria\": \"MANUAL_ROL\",\n  \"precio\": 190000.00,\n  \"stock\": 12\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/productos",
+          "raw": "{{baseUrl}}/productos/1",
           "host": ["{{baseUrl}}"],
           "path": ["productos", "1"]
         }
       }
     },
     {
-      "name": "8. Eliminar Producto",
+      "name": "9. Eliminar Producto",
       "request": {
         "method": "DELETE",
         "header": [],

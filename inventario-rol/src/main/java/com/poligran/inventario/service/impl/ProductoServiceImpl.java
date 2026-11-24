@@ -1,6 +1,7 @@
 package com.poligran.inventario.service.impl;
 
 import com.poligran.inventario.dto.request.ProductoRequestDTO;
+import com.poligran.inventario.dto.response.CotizacionDescuentoDTO;
 import com.poligran.inventario.dto.response.ProductoResponseDTO;
 import com.poligran.inventario.exception.BadRequestException;
 import com.poligran.inventario.exception.ResourceNotFoundException;
@@ -8,9 +9,13 @@ import com.poligran.inventario.model.entity.Producto;
 import com.poligran.inventario.model.enums.CategoriaProducto;
 import com.poligran.inventario.repository.ProductoRepository;
 import com.poligran.inventario.service.ProductoService;
+import com.poligran.inventario.strategy.DescuentoStrategy;
+import com.poligran.inventario.strategy.context.DescuentoContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +23,11 @@ import java.util.stream.Collectors;
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final DescuentoContext descuentoContext;
 
-    public ProductoServiceImpl(ProductoRepository productoRepository) {
+    public ProductoServiceImpl(ProductoRepository productoRepository, DescuentoContext descuentoContext) {
         this.productoRepository = productoRepository;
+        this.descuentoContext = descuentoContext;
     }
 
     @Override
@@ -95,6 +102,32 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public CotizacionDescuentoDTO cotizarDescuento(Long id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+
+        DescuentoStrategy estrategia = descuentoContext.obtenerEstrategia(producto.getCategoria());
+        BigDecimal precioBase = producto.getPrecio();
+        BigDecimal precioFinal = estrategia.calcularPrecioFinal(precioBase);
+        BigDecimal porcentaje = estrategia.obtenerPorcentajeDescuento();
+        BigDecimal montoDescuento = precioBase.subtract(precioFinal).setScale(2, RoundingMode.HALF_UP);
+
+        return new CotizacionDescuentoDTO(
+                producto.getId(),
+                producto.getCodigoSku(),
+                producto.getNombre(),
+                producto.getCategoria(),
+                precioBase,
+                porcentaje,
+                montoDescuento,
+                precioFinal,
+                estrategia.getClass().getSimpleName(),
+                estrategia.obtenerDescripcionRegla()
+        );
+    }
+
     private void actualizarDatosEntidad(Producto entidad, ProductoRequestDTO dto) {
         entidad.setCodigoSku(dto.getCodigoSku().trim().toUpperCase());
         entidad.setNombre(dto.getNombre().trim());
@@ -105,6 +138,10 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     private ProductoResponseDTO mapearADTO(Producto entidad) {
+        BigDecimal precioFinal = descuentoContext.calcularPrecioFinal(entidad.getCategoria(), entidad.getPrecio());
+        BigDecimal porcentaje = descuentoContext.obtenerPorcentajeDescuento(entidad.getCategoria());
+        String regla = descuentoContext.obtenerDescripcionRegla(entidad.getCategoria());
+
         return new ProductoResponseDTO(
                 entidad.getId(),
                 entidad.getCodigoSku(),
@@ -113,6 +150,9 @@ public class ProductoServiceImpl implements ProductoService {
                 entidad.getCategoria(),
                 entidad.getPrecio(),
                 entidad.getStock(),
+                porcentaje,
+                precioFinal,
+                regla,
                 entidad.getFechaCreacion(),
                 entidad.getFechaActualizacion()
         );

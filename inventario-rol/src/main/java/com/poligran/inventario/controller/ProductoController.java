@@ -1,6 +1,7 @@
 package com.poligran.inventario.controller;
 
 import com.poligran.inventario.dto.request.ProductoRequestDTO;
+import com.poligran.inventario.dto.response.CotizacionDescuentoDTO;
 import com.poligran.inventario.dto.response.ProductoResponseDTO;
 import com.poligran.inventario.model.enums.CategoriaProducto;
 import com.poligran.inventario.service.ProductoService;
@@ -28,7 +29,7 @@ public class ProductoController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos los productos", description = "Retorna el listado completo de productos registrados en el inventario")
+    @Operation(summary = "Listar todos los productos", description = "Retorna el listado completo de productos registrados en el inventario con precios y descuentos calculados por Strategy")
     @ApiResponse(responseCode = "200", description = "Lista recuperada exitosamente")
     public ResponseEntity<List<ProductoResponseDTO>> listarTodos() {
         return ResponseEntity.ok(productoService.listarTodos());
@@ -65,6 +66,18 @@ public class ProductoController {
             @Parameter(description = "Categoria ludica del producto")
             @PathVariable CategoriaProducto categoria) {
         return ResponseEntity.ok(productoService.listarPorCategoria(categoria));
+    }
+
+    @GetMapping("/{id}/descuento")
+    @Operation(summary = "Calcular cotizacion con descuento GoF Strategy", description = "Ejecuta dinamicamente la estrategia concreta GoF Strategy segun la categoria del producto y retorna el desglose del descuento y precio final")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cotizacion calculada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    public ResponseEntity<CotizacionDescuentoDTO> cotizarDescuento(
+            @Parameter(description = "ID del producto para cotizar", example = "1")
+            @PathVariable Long id) {
+        return ResponseEntity.ok(productoService.cotizarDescuento(id));
     }
 
     @PostMapping
